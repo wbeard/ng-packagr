@@ -9,14 +9,8 @@
       "es2015",
       "es2016"
     ],
-    "types": [
-      "chai",
-      "mocha",
-      "node",
-      "sinon"
-    ],
     "jsx": "react"
-  },
+    },
   "exclude": [
     "dist",
     ".ng_build"
