@@ -3,6 +3,7 @@ import * as ts from 'typescript';
 import { TsConfig } from '../steps/ngc';
 import { NgEntryPoint } from './entry-point';
 import { NgPackage } from './package';
+import { SourceFilePath } from './shared';
 
 /**
  * Build artefacts generated for an entry point (Angular library).
@@ -21,11 +22,14 @@ export class NgArtefacts {
   private _extras: Map<string, any> = new Map();
 
   constructor(
-    entryPoint: NgEntryPoint,
-    pkg: NgPackage
+    public project: SourceFilePath,
+    public readonly entryPoint: NgEntryPoint = undefined,
+    public readonly pkg: NgPackage = undefined
   ) {
-    this.stageDir = path.resolve(pkg.workingDirectory, entryPoint.flatModuleFile, 'stage');
-    this.outDir = path.resolve(pkg.workingDirectory, entryPoint.flatModuleFile, 'out');
+    if (entryPoint && pkg) {
+      this.stageDir = path.resolve(pkg.workingDirectory, entryPoint.flatModuleFile, 'stage');
+      this.outDir = path.resolve(pkg.workingDirectory, entryPoint.flatModuleFile, 'out');
+    }
   }
 
   public extras<T> (key: string): T;

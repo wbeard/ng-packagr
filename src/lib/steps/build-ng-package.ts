@@ -20,10 +20,10 @@ export async function buildNgPackage(opts: CliArguments): Promise<void> {
     // clean the primary dest folder (should clean all secondary module directories as well)
     await rimraf(ngPackage.dest);
 
-    const artefacts = new NgArtefacts(ngPackage.primary, ngPackage);
+    const artefacts = new NgArtefacts(opts.project, ngPackage.primary, ngPackage);
     await transformSources({ artefacts, entryPoint: ngPackage.primary, pkg: ngPackage });
     for (const secondary of ngPackage.secondaries) {
-      const artefacts = new NgArtefacts(secondary, ngPackage);
+      const artefacts = new NgArtefacts(opts.project, secondary, ngPackage);
       await transformSources({ artefacts, entryPoint: secondary, pkg: ngPackage });
     }
 
