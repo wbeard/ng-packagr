@@ -17,7 +17,7 @@ describe('Pipeline', () => {
       expect(pipeline['tasks']).to.be.an('array').that.has.length(2);
     });
 
-    it(`should deduplicate by name`, () => {
+    it(`should deduplicate by id`, () => {
       const pipeline = new Pipeline<any>()
         .withTasks([
           { id: 'foo', attachTo: (): any => true },
@@ -27,7 +27,7 @@ describe('Pipeline', () => {
 
       const tasks = pipeline['tasks'] as any[];
       expect(tasks).to.be.an('array').that.has.length(2);
-      expect(tasks.find(t => t.name === 'foo').attachTo()).to.be.false;
+      expect(tasks.find(t => t.id === 'foo').attachTo()).to.be.false;
     });
 
     it(`should deduplicate by 'last-wins' strategy`, () => {
@@ -38,7 +38,7 @@ describe('Pipeline', () => {
         ]);
 
       const tasks = pipeline['tasks'] as any[];
-      expect(tasks.find(t => t.name === 'foo').attachTo()).to.be.false;
+      expect(tasks.find(t => t.id === 'foo').attachTo()).to.be.false;
     });
   });
 
@@ -53,7 +53,7 @@ describe('Pipeline', () => {
       expect(pipeline['tasks']).to.be.an('array').that.has.length(2);
     });
 
-    it(`should override by name`, () => {
+    it(`should override by id`, () => {
       const pipeline = new Pipeline<any>()
         .withTasks([
           { id: 'foo', attachTo: (): any => false }
@@ -62,7 +62,7 @@ describe('Pipeline', () => {
 
       const tasks = pipeline['tasks'] as any[];
       expect(tasks).to.be.an('array').that.has.length(1);
-      expect(tasks.find(t => t.name === 'foo').attachTo()).to.equal('123');
+      expect(tasks.find(t => t.id === 'foo').attachTo()).to.equal('123');
     });
   });
 

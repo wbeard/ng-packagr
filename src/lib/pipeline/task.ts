@@ -1,10 +1,10 @@
-import * as ora from 'ora';
 import { Observable } from 'rxjs/Observable';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { of } from 'rxjs/observable/of';
 import { filter, switchMap, tap, map } from 'rxjs/operators';
 import { UnaryFunction } from 'rxjs/interfaces';
 import { pipe } from 'rxjs/util/pipe';
+import * as spinner from '../util/spinner';
 import { Pipeline, PipelineProgress } from './pipeline';
 import { Transformation } from './transformation';
 
@@ -140,10 +140,9 @@ export class TaskBuilder<P, A, R> {
       throw new Error(`No transform function for task ${this.identifier}`);
     }
 
-    const spinner = ora(this.label);
     const attachTo = pipe(
       filter(this.filterFn),
-      tap(() => spinner.start()),
+      tap(() => spinner.taskStarts(this.label)),
       switchMap(({ task, payload }) => {
         const args = this.mapFn(payload);
         const result = this.transformFn(args);
@@ -154,8 +153,8 @@ export class TaskBuilder<P, A, R> {
           return of(this.resultFn(result, payload));
         }
       }),
-      tap(() => spinner.succeed()),
-      map((payload) => ({ type: this.identifier, payload }))
+      tap(() => spinner.taskCompleted(this.label)),
+      map((payload) => ({ task: this.identifier, payload }))
     );
 
     return {

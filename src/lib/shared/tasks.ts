@@ -3,12 +3,15 @@ import { Observable } from 'rxjs/Observable';
 import { concat as concatStatic } from 'rxjs/observable/concat';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { of as ofStatic } from 'rxjs/observable/of';
+import { merge as mergeStatic } from 'rxjs/observable/merge';
+import { zip as zipStatic } from 'rxjs/observable/zip';
 import { merge } from 'rxjs/observable/merge';
 import { never } from 'rxjs/observable/never';
 import { map } from 'rxjs/operators/map';
 import { switchMap } from 'rxjs/operators/switchMap';
 import { filter } from 'rxjs/operators/filter';
 import { tap } from 'rxjs/operators/tap';
+import { zip } from 'rxjs/operators/zip';
 import { pipe } from 'rxjs/util/pipe';
 import 'rxjs/add/operator/map';
 import { NgArtefacts } from '../ng-package-format/artefacts';
@@ -19,6 +22,7 @@ import { discoverPackages } from '../steps/init';
 import { ngPackagr } from '../ng-v5-packagr';
 import { rimraf } from '../util/rimraf';
 import { copyFiles } from '../util/copy';
+import { Subject } from 'rxjs/Subject';
 
 export const discoverEntryPoints = (project: string): MetaTask<NgArtefacts> => ({
   id: 'discoverEntryPoints',
@@ -52,21 +56,61 @@ export const discoverEntryPoints = (project: string): MetaTask<NgArtefacts> => (
   )
 });
 
-
-export const transformEntryPoint = {
+export const transformEntryPoint = (): MetaTask<NgArtefacts> => ({
   id: 'transformEntryPoint',
-  attachTo: (source: Pipeline<NgArtefacts>) => {
+  attachTo: (source) => {
+
     const mediumFree$ = concatStatic(
-      ofStatic(true),
-      source.pipe(filter(progress => progress.task === 'entryPointWritten'))
+      ofStatic('123'),
+      source.pipe(
+        filter(progress => progress.task === 'writeEntryPoint'),
+        tap(() => { debugger; })
+      )
     );
+
+    //const epWritten$ = source.pipe(filter(progress => progress.task === 'writeEntryPoint'));
+    let inProgress: any | undefined = undefined;
 
     return source.pipe(
-      /* .. */
+      filter(progress => progress.task === 'discoverEntryPoints'),
+      tap((_) => { debugger; }),
+      switchMap((v) => {
+        return mediumFree$.map((_) => {
+
+debugger;
+
+          return v;
+        })
+        /*
+        if (inProgress) {
+          return epWritten$.pipe(
+            map(() => {
+              inProgress = v;
+
+              return v;
+            })
+          );
+        } else {
+          inProgress = v;
+          return ofStatic(v);
+        }*/
+      }),
+      map((_) => {
+debugger;
+        return { task: 'transformEntryPoint', payload: _.payload };
+      })
     );
   }
-}
+});
 
+export const writeEntryPoint = task<NgArtefacts>('writeEntryPoint')
+  .what('Write entry point files to npm package')
+  .when(progress => progress.task === 'transformEntryPoint')
+  .with(progress => progress.entryPoint)
+  .how((args) => {
+debugger;
+  })
+  .build();
 
 export const cleanDest = task<NgArtefacts>('cleanDest')
   .what('Cleaning destination directory')

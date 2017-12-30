@@ -26,12 +26,13 @@ export const isPipelineProgress = (value: any): value is PipelineProgress<any> =
 /** @experimental */
 export class Pipeline<Payload> extends Subject<PipelineProgress<Payload>> {
 
+  private isRunning: boolean = false;
   private tasks: MetaTask<any>[] = [];
 
   public withTasks(tasks: MetaTask<any>[]): Pipeline<Payload> {
     this.tasks = this.tasks.concat(tasks)
       .reduce(
-        (deduplicated, task) => deduplicated.filter((t) => t.name !== task.id).concat(task),
+        (deduplicated, task) => deduplicated.filter((t) => t.id !== task.id).concat(task),
         []
       );
 
@@ -49,7 +50,19 @@ export class Pipeline<Payload> extends Subject<PipelineProgress<Payload>> {
     return this;
   }
 
+  public complete() {
+    this.isRunning = false;
+    super.complete();
+  }
+
   public run(): void {
+    this.isRunning = true;
+    this.subscribe(
+      (next) => { debugger; },
+      (err) => { debugger; },
+      () => { debugger; }
+    )
+
     for (let task of this.tasks) {
       this.pipe(task.attachTo).subscribe(this);
     }
