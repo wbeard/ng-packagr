@@ -14,3 +14,10 @@ export const taskCompleted = (id: string) => {
     spinner.succeed();
   }
 };
+
+
+const SPINNERS = new Map<string, any>();
+
+export const spinner = (id: string) => {
+  return ora(id);
+}

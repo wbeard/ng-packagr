@@ -9,4 +9,4 @@ export interface CliArguments {
 }
 
 export const build: Command<CliArguments, void> =
-  (opts) => ngPackagr().forProject(opts.project).run();
+  (opts) => ngPackagr().forProject(opts.project).runWith();

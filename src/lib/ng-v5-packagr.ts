@@ -36,7 +36,7 @@ export const ngPackagrDi = () => {
     NgPackagr
   ]).get(NgPackagr);
 
-  (ng as NgPackagr).run();
+  (ng as NgPackagr).runWith();
 }
 
 /**
