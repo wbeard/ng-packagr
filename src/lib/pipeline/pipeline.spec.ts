@@ -72,7 +72,7 @@ describe('Pipeline', () => {
 
       pipeline.subscribe(
         (next) => {
-          expect(next.type).to.equal(INIT.type);
+          expect(next.task).to.equal(INIT.task);
           done();
         },
         (err) => done.fail(`Pipeline must not throw ${err}`)
@@ -108,6 +108,6 @@ describe(`isPipelineProgress`, () => {
 
 describe(`INIT`, () => {
   it(`should have magic type value '⁄init⁄'`, () => {
-    expect(INIT.type).to.equal('⁄init⁄');
+    expect(INIT.task).to.equal('⁄init⁄');
   });
 });

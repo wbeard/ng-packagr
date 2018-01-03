@@ -15,7 +15,7 @@ describe(`task()`, () => {
 
     const t = task<Stuff>('foo')
       .what('Does foo stuff')
-      .when(progress => progress.type === 'BAR')
+      .when(progress => progress.task === 'BAR')
       .with(payload => payload.people)
       .how((args) => args.length)
       .why((result, payload) => ({

@@ -4,15 +4,18 @@ import 'rxjs/add/operator/map';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { MetaTask } from './task';
 
+export type ProgressType = 'Starts' | 'Finishes' | 'Pending';
+
 /** @experimental */
 export interface PipelineProgress<Payload> {
-  type: string,
-  payload: Payload
+  task: string,
+  payload: Payload,
+  type?: ProgressType
 }
 
 /** @experimental */
 export const INIT: PipelineProgress<any> = {
-  type: '⁄init⁄',
+  task: '⁄init⁄',
   payload: {}
 }
 

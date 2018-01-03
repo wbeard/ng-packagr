@@ -23,7 +23,7 @@ import { copyFiles } from '../util/copy';
 export const discoverEntryPoints = (project: string): MetaTask<NgArtefacts> => ({
   id: 'discoverEntryPoints',
   attachTo: pipe(
-    filter(progress => progress.type === INIT.type),
+    filter(progress => progress.task === INIT.task),
     switchMap(() => {
       const spinner = ora({
         text: 'Discover entry points',
@@ -44,7 +44,7 @@ export const discoverEntryPoints = (project: string): MetaTask<NgArtefacts> => (
         });
     }),
     map((arr) => {
-      return arr.map((payload: NgArtefacts): PipelineProgress<NgArtefacts> => ({ type: 'discoverEntryPoints', payload }))
+      return arr.map((payload: NgArtefacts): PipelineProgress<NgArtefacts> => ({ task: 'discoverEntryPoints', payload }))
     }),
     switchMap((arr) => {
       return merge(arr);
@@ -58,7 +58,7 @@ export const transformEntryPoint = {
   attachTo: (source: Pipeline<NgArtefacts>) => {
     const mediumFree$ = concatStatic(
       ofStatic(true),
-      source.pipe(filter(progress => progress.type === 'entryPointWritten'))
+      source.pipe(filter(progress => progress.task === 'entryPointWritten'))
     );
 
     return source.pipe(
@@ -70,21 +70,21 @@ export const transformEntryPoint = {
 
 export const cleanDest = task<NgArtefacts>('cleanDest')
   .what('Cleaning destination directory')
-  .when(progress => progress.type === 'discoverEntryPoints')
+  .when(progress => progress.task === 'discoverEntryPoints')
   .with(payload => payload.pkg.dest)
   .how(rimraf)
   .build();
 
 export const pruneWorkingDir = task<NgArtefacts>('pruneWorkingDir')
   .what('Prune working directory')
-  .when(progress => progress.type === copyPackageFiles.id)
+  .when(progress => progress.task === copyPackageFiles.id)
   .with(payload => payload.pkg.workingDirectory)
   .how(rimraf)
   .build();
 
 export const copyPackageFiles = task<NgArtefacts>('copyPackageFiles')
   .what('Copy additional files to npm package')
-  .when(progress => progress.type === cleanDest.id)
+  .when(progress => progress.task === cleanDest.id)
   .with(payload => payload.pkg)
   .how((args) => Promise.all([
     copyFiles(`${args.src}/README.md`, args.dest),

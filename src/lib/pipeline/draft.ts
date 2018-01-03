@@ -11,11 +11,11 @@ interface MyArtefacts {
 
 const readSources = { id: 'readSources', attachTo:
   (pipeline$: Pipeline<MyArtefacts>) => pipeline$.pipe(
-    filter((progress) => progress.type === 'INIT'),
+    filter((progress) => progress.task === 'INIT'),
     switchMap((value) => {
-      pipeline$.next({ type: 'readSources', payload: { moduleId: '@foo/core' } });
-      pipeline$.next({ type: 'readSources', payload: { moduleId: '@foo/bar' } });
-      pipeline$.next({ type: 'readSources', payload: { moduleId: '@foo/common' } });
+      pipeline$.next({ task: 'readSources', payload: { moduleId: '@foo/core' } });
+      pipeline$.next({ task: 'readSources', payload: { moduleId: '@foo/bar' } });
+      pipeline$.next({ task: 'readSources', payload: { moduleId: '@foo/common' } });
 
       return of(123)
     }),
@@ -26,7 +26,7 @@ const readSources = { id: 'readSources', attachTo:
 
 const writeSources = { id: 'writeSources', attachTo:
   (pipeline$: Pipeline<MyArtefacts>) => pipeline$.pipe(
-    filter((progress) => progress.type === 'readSources'),
+    filter((progress) => progress.task === 'readSources'),
     map((abc) => '123'),
     map(() => ({ type: 'writeSources', payload: null }))
   )
@@ -34,9 +34,9 @@ const writeSources = { id: 'writeSources', attachTo:
 
 const rewriteDependencyStuff = { id: 'invokedBeforeDependencyEntryPoint', attachTo:
   (pipe$: Pipeline<MyArtefacts>) => pipe$.pipe(
-    filter((progress) => progress.type === 'waitForDependencies'),
+    filter((progress) => progress.task === 'waitForDependencies'),
     tap((value) => {
-      pipe$.next({ type: 'JUHU!', payload: {} });
+      pipe$.next({ task: 'JUHU!', payload: {} });
 
       console.log("invokedBeforeDependencyEntryPoint", value);
     })
@@ -46,7 +46,7 @@ const rewriteDependencyStuff = { id: 'invokedBeforeDependencyEntryPoint', attach
 
 const waitForDependencyEntryPoint = { id: 'waitForDependencies', attachTo:
   (pipeline$: Pipeline<MyArtefacts>) => pipeline$.pipe(
-    filter((progress) => progress.type === 'readSources' && progress.payload.moduleId === '@foo/bar'),
+    filter((progress) => progress.task === 'readSources' && progress.payload.moduleId === '@foo/bar'),
     map((value) => {
       console.log("Found dependency!", value);
 

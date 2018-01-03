@@ -144,7 +144,7 @@ export class TaskBuilder<P, A, R> {
     const attachTo = pipe(
       filter(this.filterFn),
       tap(() => spinner.start()),
-      switchMap(({ type, payload }) => {
+      switchMap(({ task, payload }) => {
         const args = this.mapFn(payload);
         const result = this.transformFn(args);
         if (result instanceof Promise) {
