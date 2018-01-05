@@ -1,6 +1,67 @@
+import { ReplaySubject } from 'rxjs/ReplaySubject';
+
+
+let sub$ = new ReplaySubject<string>();
+
+sub$.next('foo'); // <-- from here :-)
+
+sub$.subscribe(
+  (next) => {
+    debugger;
+  },
+  (err) => {
+    debugger;
+  },
+  () => {
+    // it's complete!
+    debugger;
+  }
+)
+
+sub$.complete(); // <.--!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //import { merge } from 'rxjs/observable/merge';
 //import { Pipeline, PipelineProgress } from './pipeline';
 //import { TaskAttachFn, MetaTask } from './task';
+/*
 import 'rxjs/add/operator/map';
 import { filter, switchMap, map, tap, delay, bufferTime, takeLast, observeOn } from 'rxjs/operators';
 import { of as observableOf } from 'rxjs/observable/of';
@@ -13,6 +74,9 @@ import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 
 
+console.log("hello world");
+*/
+/*
 const obs1$ = observableFrom([1, 22, 3], asap);
 const obs2$ = observableFrom([4, 55, 6], asap)
 const obs3$ = observableFrom([7, 88, 9], asap);
@@ -47,6 +111,7 @@ function subscribeSequentially(...args: Observable<any>[]) {
 }
 
 subscribeSequentially(obs1$, obs2$, obs3$)
+*/
 
 //obs1$.subscribe(next => console.log('obs1$ :', next));
 //obs2$.subscribe(next => console.log('obs2$ :', next));
