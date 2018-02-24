@@ -3,82 +3,54 @@ import * as path from 'path';
 import stripBom = require('strip-bom');
 import { Transform, transformFromPromise } from '../../../brocc/transform';
 import { NgEntryPoint, CssUrl } from '../../../ng-package-format/entry-point';
+import { RendererFactory } from '../../../stylesheets/stylesheets';
 import * as log from '../../../util/log';
 import { byEntryPoint, isInProgress } from '../../entry-point.node';
 
 // CSS Tools
-import * as autoprefixer from 'autoprefixer';
-import * as browserslist from 'browserslist';
-import * as postcss from 'postcss';
 import * as sass from 'node-sass';
 import * as nodeSassTildeImporter from 'node-sass-tilde-importer';
 import * as less from 'less';
 import * as stylus from 'stylus';
-import * as postcssUrl from 'postcss-url';
-import * as postcssComments from 'postcss-discard-comments';
 
-export const stylesheetTransform: Transform = transformFromPromise(async graph => {
-  log.info(`Rendering Stylesheets`);
+export const stylesheetTransformFactory = (postCssFactory: RendererFactory) =>
+  transformFromPromise(async graph => {
+    log.info(`Rendering Stylesheets`);
 
-  // TODO: fetch current entry point from graph
-  const entryPoint = graph.find(byEntryPoint().and(isInProgress));
+    // TODO: fetch current entry point from graph
+    const entryPoint = graph.find(byEntryPoint().and(isInProgress));
 
-  // TODO: fetch nodes from the graph
-  const stylesheetNodes = graph.from(entryPoint).filter(node => node.type === 'text/css' && node.state !== 'done');
+    // TODO: fetch nodes from the graph
+    const stylesheetNodes = graph.from(entryPoint).filter(node => node.type === 'text/css' && node.state !== 'done');
 
-  // TODO: detemrine base path from NgPackage
-  const ngPkg = graph.find(node => node.type === 'application/ng-package');
-  const basePath: string = ngPkg.data.basePath;
+    // TODO: detemrine base path from NgPackage
+    const ngPkg = graph.find(node => node.type === 'application/ng-package');
+    const basePath: string = ngPkg.data.basePath;
 
-  await Promise.all(
-    stylesheetNodes.map(async stylesheetNode => {
-      const filePath: string = stylesheetNode.url.substring('file://'.length);
+    const postCssProcessor = postCssFactory(entryPoint.data.entryPoint);
 
-      // preprocessor (render)
-      const renderedCss: string = await renderPreProcessor(filePath, basePath, entryPoint.data.entryPoint);
+    await Promise.all(
+      stylesheetNodes.map(async stylesheetNode => {
+        const filePath: string = stylesheetNode.url.substring('file://'.length);
 
-      // postcss (autoprefixing, et al)
-      const result: string = await renderPostCss(filePath, renderedCss, entryPoint.data.entryPoint.cssUrl);
+        // preprocessor (render)
+        const cssString: string = await renderPreProcessor(filePath, basePath, entryPoint.data.entryPoint);
 
-      // TODO: update nodes in the graph
-      stylesheetNode.data = {
-        ...stylesheetNode.data,
-        content: result
-      };
-    })
-  );
+        // postcss (autoprefixing, et al)
+        const result: string = await postCssProcessor({ filePath, cssString });
 
-  // TODO: await forEach() ?!?
+        // TODO: update nodes in the graph
+        stylesheetNode.data = {
+          ...stylesheetNode.data,
+          content: result
+        };
+      })
+    );
 
-  return graph;
-});
+    // TODO: await forEach() ?!?
 
-async function renderPostCss(filePath: string, cssStyles: string, cssUrl: CssUrl): Promise<string> {
-  log.debug(`determine browserslist for ${filePath}`);
-  const browsers = browserslist(undefined, { filePath });
-
-  const postCssPlugins = [autoprefixer({ browsers }), postcssComments({ removeAll: true })];
-
-  if (cssUrl !== CssUrl.none) {
-    log.debug(`postcssUrl: ${cssUrl}`);
-    postCssPlugins.push(postcssUrl({ url: cssUrl }));
-  }
-
-  const result: postcss.Result = await postcss(postCssPlugins).process(cssStyles, {
-    from: filePath,
-    to: filePath.replace(path.extname(filePath), '.css')
+    return graph;
   });
-
-  // Escape existing backslashes for the final output into a string literal, which would otherwise escape the character after it
-  result.css = result.css.replace(/\\/g, '\\\\');
-
-  // Log warnings from postcss
-  result.warnings().forEach(msg => {
-    log.warn(msg.toString());
-  });
-
-  return result.css;
-}
 
 async function renderPreProcessor(filePath: string, basePath: string, entryPoint: NgEntryPoint): Promise<string> {
   log.debug(`Render styles for ${filePath}`);

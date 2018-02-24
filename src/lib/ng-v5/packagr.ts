@@ -12,6 +12,8 @@ import { ENTRY_POINT_TRANSFORM, ENTRY_POINT_PROVIDERS } from './entry-point.di';
 import { PACKAGE_TRANSFORM } from './package.di';
 import { provideProject } from './project.di';
 import { provideTsConfig } from './entry-point/ts/init-tsconfig.di';
+import { RendererFactory } from '../stylesheets/stylesheets';
+import { providePostCss } from './entry-point/resources/stylesheet.di';
 
 /**
  * The original ng-packagr implemented on top of a rxjs-ified and di-jectable transformation pipeline.
@@ -58,6 +60,13 @@ export class NgPackagr {
    */
   public withTsConfig(defaultValues: TsConfig | string): NgPackagr {
     this.providers.push(provideTsConfig(defaultValues));
+
+    return this;
+  }
+
+  public withPostCss(factory: RendererFactory): NgPackagr {
+    // TODO
+    this.providers.push(providePostCss(factory));
 
     return this;
   }

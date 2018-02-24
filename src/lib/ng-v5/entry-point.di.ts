@@ -2,7 +2,11 @@ import { InjectionToken, Provider, ValueProvider } from 'injection-js';
 import { Transform } from '../brocc/transform';
 import { TransformProvider, provideTransform } from '../brocc/transform.di';
 import { TsConfig } from '../ts/tsconfig';
-import { STYLESHEET_TRANSFORM, STYLESHEET_TRANSFORM_TOKEN } from './entry-point/resources/stylesheet.di';
+import {
+  POST_CSS_PROVIDER,
+  STYLESHEET_TRANSFORM,
+  STYLESHEET_TRANSFORM_TOKEN
+} from './entry-point/resources/stylesheet.di';
 import { ANALYSE_SOURCES_TOKEN, ANALYSE_SOURCES_TRANSFORM } from './entry-point/ts/analyse-sources.di';
 import { COMPILE_NGC_TOKEN, COMPILE_NGC_TRANSFORM } from './entry-point/ts/compile-ngc.di';
 import {
@@ -45,6 +49,7 @@ export const ENTRY_POINT_PROVIDERS: Provider[] = [
   DEFAULT_TS_CONFIG_PROVIDER,
   ANALYSE_SOURCES_TRANSFORM,
   STYLESHEET_TRANSFORM,
+  POST_CSS_PROVIDER,
   TEMPLATE_TRANSFORM,
   TRANSFORM_SOURCES_TRANSFORM,
   COMPILE_NGC_TRANSFORM,
