@@ -34,7 +34,6 @@ import { byEntryPoint } from './nodes';
  *
  * @param renderTemplates Transformation rendering HTML templates.
  * @param renderStylesheets Transformation rendering xCSS stylesheets.
- * @param transformTsSources Transformation manipulating the typescript source files (thus inlining template and stylesheet data).
  * @param compileTs Transformation compiling typescript sources to ES2015 modules.
  * @param writeBundles Transformation flattening ES2015 modules to ESM2015, ESM5, UMD, and minified UMD.
  * @param writePackage Transformation writing a distribution-ready `package.json` (for publishing to npm registry).
@@ -58,8 +57,6 @@ export const entryPointTransformFactory = (
     // Stylesheet and template rendering
     renderStylesheets,
     renderTemplates,
-    // Inlining of stylesheets and templates
-    transformTsSources,
     // TypeScript sources compilation
     compileTs,
     // After TypeScript: bundling and write package

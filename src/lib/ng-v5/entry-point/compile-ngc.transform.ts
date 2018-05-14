@@ -1,16 +1,16 @@
 import * as path from 'path';
 import * as ts from 'typescript';
-import { Transform, transformFromPromise } from '../../../brocc/transform';
-import { compileSourceFiles } from '../../../ngc/compile-source-files';
-import { TsConfig } from '../../../ts/tsconfig';
-import * as log from '../../../util/log';
+import { Transform, transformFromPromise } from '../../brocc/transform';
+import { compileSourceFiles } from '../../ngc/compile-source-files';
+import { TsConfig } from '../../ts/tsconfig';
+import * as log from '../../util/log';
 import {
   isEntryPointInProgress,
   isTypeScriptSources,
   TypeScriptSourceNode,
   isEntryPoint,
   EntryPointNode
-} from '../../nodes';
+} from '../nodes';
 
 export const compileNgcTransform: Transform = transformFromPromise(async graph => {
   log.info(`Compiling TypeScript sources through ngc`);
