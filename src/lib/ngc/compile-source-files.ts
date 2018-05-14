@@ -2,7 +2,6 @@ import { Position, isSyntaxError, syntaxError } from '@angular/compiler';
 import * as fs from 'fs-extra';
 import * as ts from 'typescript';
 import * as path from 'path';
-import { createCompilerHostForSynthesizedSourceFiles } from '../ts/synthesized-compiler-host';
 import { redirectWriteFileCompilerHost } from '../ts/redirect-write-file-compiler-host';
 import { TsConfig } from '../ts/tsconfig';
 import * as log from '../util/log';

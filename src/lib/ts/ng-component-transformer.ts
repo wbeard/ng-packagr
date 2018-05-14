@@ -1,7 +1,6 @@
 import * as ts from 'typescript';
 import * as path from 'path';
 import { transformComponent } from './transform-component';
-import { isSynthesizedSourceFile, replaceWithSynthesizedSourceText, writeSourceFile } from './synthesized-source-file';
 
 /**
  * Call signature for a transformer applied to `@Component({ templateUrl: '...' })`.
@@ -75,7 +74,6 @@ export const transformComponentSourceFiles: ComponentSourceFileTransformer = ({ 
         );
 
         const synthesizedSourceText = 'template: `'.concat(inlinedTemplate).concat('`');
-        replaceWithSynthesizedSourceText(node, synthesizedSourceText);
 
         return synthesizedNode;
       } else {
@@ -121,7 +119,6 @@ export const transformComponentSourceFiles: ComponentSourceFileTransformer = ({ 
         const synthesizedSourceText = 'styles: ['
           .concat(stylesheets.map(value => `\`${value}\``).join(', '))
           .concat(']');
-        replaceWithSynthesizedSourceText(node, synthesizedSourceText);
 
         return synthesizedNode;
       } else {
@@ -129,14 +126,6 @@ export const transformComponentSourceFiles: ComponentSourceFileTransformer = ({ 
       }
     },
     file: sourceFile => {
-      // XX ... the string replacement is quite hacky.
-      // Why can't we use `ts.SourceFile#update()`?
-      // It produces a `FalseExpression` error, somehow.
-      if (isSynthesizedSourceFile(sourceFile['original'])) {
-        sourceFile['__replacements'] = sourceFile['original'].__replacements;
-        return writeSourceFile(sourceFile);
-      }
-
       return sourceFile;
     }
   });
