@@ -15,10 +15,10 @@ const GENERATED_FILES = /(.*?)\.(ngfactory|shim\.ngstyle|ngstyle|ngsummary)\.(js
 
 import * as path from 'path';
 import * as tsickle from 'tsickle';
-import * as api from '@angular/compiler-cli/src/transformers/api';
+import { CompilerOptions, EmitCallback } from './ngc.api';
 
 // @link https://github.com/angular/angular/blob/83d207d/packages/compiler-cli/src/main.ts#L42-L84
-export function createEmitCallback(options: api.CompilerOptions): api.TsEmitCallback | undefined {
+export function createEmitCallback(options: CompilerOptions): EmitCallback | undefined {
   const transformDecorators = options.annotationsAs !== 'decorators';
   const transformTypesToClosure = options.annotateForClosureCompiler;
   if (!transformDecorators && !transformTypesToClosure) {

@@ -41,7 +41,6 @@ import { byEntryPoint } from './nodes';
 export const entryPointTransformFactory = (
   renderStylesheets: Transform,
   renderTemplates: Transform,
-  transformTsSources: Transform,
   compileTs: Transform,
   writeBundles: Transform,
   writePackage: Transform

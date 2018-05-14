@@ -37,14 +37,16 @@ export const compileNgcTransform: Transform = transformFromPromise(async graph =
       }
     }
   }
+  tsConfig.options.enableResourceInlining = true;
 
   // Compile TypeScript sources
   const { esm2015, esm5, declarations } = entryPoint.data.destinationFiles;
   const previousTransform = tsSources.data;
 
+  const tsSourceSet = tsSources.data.transformed;
   await Promise.all([
     compileSourceFiles(
-      tsSources.data.transformed,
+      tsSourceSet,
       tsConfig,
       {
         outDir: path.dirname(esm2015),
@@ -54,7 +56,7 @@ export const compileNgcTransform: Transform = transformFromPromise(async graph =
       path.dirname(declarations)
     ),
 
-    compileSourceFiles(tsSources.data.transformed, tsConfig, {
+    compileSourceFiles(tsSourceSet, tsConfig, {
       outDir: path.dirname(esm5),
       target: ts.ScriptTarget.ES5,
       downlevelIteration: true,

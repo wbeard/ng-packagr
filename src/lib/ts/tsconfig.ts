@@ -7,6 +7,8 @@ import { NgEntryPoint } from '../ng-package-format/entry-point';
 
 /**
  * TypeScript configuration used internally (marker typer).
+ *
+ * TODO: get rid of this. use `{ CompilerOptions } from './ngc.api'`
  */
 export type TsConfig = ng.ParsedConfiguration;
 

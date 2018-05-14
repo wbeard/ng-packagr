@@ -1,6 +1,6 @@
-import * as ng from '@angular/compiler-cli/ngtools2';
 import * as ts from 'typescript';
 import { TsConfig } from '../ts/tsconfig';
+import { createCompilerHost, createProgram, CompilerHost, Program } from './ngc.api';
 
 function isTransformationResult<T extends ts.Node>(value: any): value is ts.TransformationResult<T> {
   return value.transformed instanceof Array && typeof value.dispose === 'function';
@@ -17,11 +17,11 @@ export function transformSourceFiles(
     // Apply initial typescript transformation to initial sources from TsConfig
     const tsConfig = source;
 
-    const compilerHost: ng.CompilerHost = ng.createCompilerHost({
+    const compilerHost: CompilerHost = createCompilerHost({
       options: tsConfig.options
     });
 
-    const program: ng.Program = ng.createProgram({
+    const program: Program = createProgram({
       rootNames: [...tsConfig.rootNames],
       options: tsConfig.options,
       host: compilerHost
