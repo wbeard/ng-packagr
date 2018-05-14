@@ -13,6 +13,8 @@ import {
   CompilerHost,
   CompilerOptions,
   Diagnostic,
+  EmitCallback,
+  EmitFlags,
   Program,
   DEFAULT_ERROR_CODE,
   SOURCE,
@@ -24,56 +26,40 @@ export async function compileSourceFiles(
   sourceFiles: ts.SourceFile[],
   tsConfig: TsConfig,
   extraOptions?: Partial<CompilerOptions>,
-  declarationDir?: string
+  declarationDir?: string,
+  readResource?: (fileName: string) => string | Promise<string>
 ) {
   log.debug(`ngc (v${VERSION.full})`);
 
   const compilerOptions: CompilerOptions = { ...tsConfig.options, ...extraOptions };
   let compilerHost: CompilerHost = createCompilerHost({ options: compilerOptions });
+
+  // TODO: somewhere, we have a paths issue stuffs
+
   if (declarationDir) {
     compilerHost = redirectWriteFileCompilerHost(compilerHost, compilerOptions.basePath, declarationDir);
   }
 
   // TODO: need to resolve resource file contents from the graph....
-  compilerHost.readResource = (fileName: string) => {
-    return 'foo';
-  };
+  if (readResource) {
+    compilerHost.readResource = readResource;
+  } else {
+    // TODO: what if we don't have that?
+  }
 
-  let program = createProgram({
+  let program: Program = createProgram({
     rootNames: tsConfig.rootNames,
     options: compilerOptions,
     host: compilerHost
   });
 
-  const emitCallback = createEmitCallback(compilerOptions);
-  const emitFlags = tsConfig.emitFlags;
-  let emitResult: ts.EmitResult | undefined;
-
-  let allDiagnostics: Array<ts.Diagnostic | Diagnostic> = [];
-  try {
-    allDiagnostics.push(...defaultGatherDiagnostics(program!));
-
-    if (!hasErrors(allDiagnostics)) {
-      emitResult = program!.emit({ emitCallback, emitFlags });
-      allDiagnostics.push(...emitResult.diagnostics);
-      return { diagnostics: allDiagnostics, program, emitResult };
-    }
-    return { diagnostics: allDiagnostics, program };
-  } catch (e) {
-    let errMsg: string;
-    let code: number;
-    if (isSyntaxError(e)) {
-      // don't report the stack for syntax errors as they are well known errors.
-      errMsg = e.message;
-      code = DEFAULT_ERROR_CODE;
-    } else {
-      errMsg = e.stack;
-      // It is not a syntax error we might have a program with unknown state, discard it.
-      program = undefined;
-      code = UNKNOWN_ERROR_CODE;
-    }
-    allDiagnostics.push({ category: ts.DiagnosticCategory.Error, messageText: errMsg, code, source: SOURCE });
-  }
+  const emitCallback: EmitCallback = createEmitCallback(compilerOptions);
+  const emitFlags: EmitFlags = tsConfig.emitFlags;
+  const allDiagnostics = emitWithDiagnostics({
+    program,
+    emitCallback,
+    emitFlags
+  });
 
   const flatModuleFile = compilerOptions.flatModuleOutFile;
   const flatModuleFileExtension = path.extname(flatModuleFile);
@@ -91,6 +77,47 @@ export async function compileSourceFiles(
 
   const exitCode = exitCodeFromResult(allDiagnostics);
   return exitCode === 0 ? Promise.resolve() : Promise.reject(new Error(formatDiagnostics(allDiagnostics)));
+}
+
+function emitWithDiagnostics({
+  program,
+  emitCallback,
+  emitFlags
+}: {
+  program: Program;
+  emitCallback: EmitCallback;
+  emitFlags: EmitFlags;
+}): Diagnostics {
+  let allDiagnostics: Array<ts.Diagnostic | Diagnostic> = [];
+  let emitResult: ts.EmitResult | undefined;
+  try {
+    allDiagnostics.push(...defaultGatherDiagnostics(program!));
+
+    if (!hasErrors(allDiagnostics)) {
+      emitResult = program!.emit({ emitCallback, emitFlags });
+      allDiagnostics.push(...emitResult.diagnostics);
+
+      return allDiagnostics;
+    }
+
+    return allDiagnostics;
+  } catch (e) {
+    let errMsg: string;
+    let code: number;
+    if (isSyntaxError(e)) {
+      // don't report the stack for syntax errors as they are well known errors.
+      errMsg = e.message;
+      code = DEFAULT_ERROR_CODE;
+    } else {
+      errMsg = e.stack;
+      // It is not a syntax error we might have a program with unknown state, discard it.
+      program = undefined;
+      code = UNKNOWN_ERROR_CODE;
+    }
+    allDiagnostics.push({ category: ts.DiagnosticCategory.Error, messageText: errMsg, code, source: SOURCE });
+  }
+
+  return allDiagnostics;
 }
 
 type Diagnostics = ReadonlyArray<ts.Diagnostic | Diagnostic>;

@@ -9,7 +9,10 @@ import {
   isTypeScriptSources,
   TypeScriptSourceNode,
   isEntryPoint,
-  EntryPointNode
+  EntryPointNode,
+  fileUrl,
+  StylesheetNode,
+  TemplateNode
 } from '../nodes';
 
 export const compileNgcTransform: Transform = transformFromPromise(async graph => {
@@ -37,7 +40,19 @@ export const compileNgcTransform: Transform = transformFromPromise(async graph =
       }
     }
   }
+
+  // In:qline resources through ngc compiler option
   tsConfig.options.enableResourceInlining = true;
+  const resourceReader = (fileName: string): string => {
+    const node = entryPoint.find(node => node.url === fileUrl(fileName)) as StylesheetNode | TemplateNode;
+
+    if (node) {
+      return node.data.content;
+    } else {
+      // TODO: throw error?!?!
+      return undefined;
+    }
+  };
 
   // Compile TypeScript sources
   const { esm2015, esm5, declarations } = entryPoint.data.destinationFiles;
@@ -53,20 +68,27 @@ export const compileNgcTransform: Transform = transformFromPromise(async graph =
         declaration: true,
         target: ts.ScriptTarget.ES2015
       },
-      path.dirname(declarations)
+      path.dirname(declarations),
+      resourceReader
     ),
 
-    compileSourceFiles(tsSourceSet, tsConfig, {
-      outDir: path.dirname(esm5),
-      target: ts.ScriptTarget.ES5,
-      downlevelIteration: true,
-      // the options are here, to improve the build time
-      declaration: false,
-      declarationDir: undefined,
-      skipMetadataEmit: true,
-      skipTemplateCodegen: true,
-      strictMetadataEmit: false
-    })
+    compileSourceFiles(
+      tsSourceSet,
+      tsConfig,
+      {
+        outDir: path.dirname(esm5),
+        target: ts.ScriptTarget.ES5,
+        downlevelIteration: true,
+        // the options are here, to improve the build time
+        declaration: false,
+        declarationDir: undefined,
+        skipMetadataEmit: true,
+        skipTemplateCodegen: true,
+        strictMetadataEmit: false
+      },
+      undefined,
+      resourceReader
+    )
   ]);
 
   previousTransform.dispose();
