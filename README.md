@@ -275,7 +275,7 @@ construct them, you can set the `jsx` flag for your library through `ng-package.
 }
 ```
 
-The `jsx` flag will accept what the corresponding `tsconfig` accepts, more information [in the TypeScript Handbook chaper on JSX](https://www.typescriptlang.org/docs/handbook/jsx.html).
+The `jsx` flag will accept what the corresponding `tsconfig` accepts, more information [in the TypeScript Handbook chapter on JSX](https://www.typescriptlang.org/docs/handbook/jsx.html).
 
 Note: Don't forget to include `react` and `react-dom` in `umdModuleIds` so that you're shipping a correct UMD bundle!
 
